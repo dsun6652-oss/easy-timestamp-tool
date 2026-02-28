@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useI18n } from './useI18n'
 import './App.css'
 
 // 时间戳 → 北京时间（固定 UTC+8）
@@ -28,6 +29,7 @@ function dateToTimestamp(str, outputMs = true) {
 }
 
 function App() {
+  const { t, lang, setLang } = useI18n()
   const [mode, setMode] = useState('ts2date') // 'ts2date' | 'date2ts'
   const [unit, setUnit] = useState('ms') // 'ms' | 's'
   const [input, setInput] = useState('')
@@ -45,17 +47,17 @@ function App() {
       if (result) {
         setOutput(result)
       } else {
-        setError('无效的时间戳，请检查格式')
+        setError(t('errorInvalidTs'))
       }
     } else {
       const result = dateToTimestamp(input.trim(), unit === 'ms')
       if (result !== null) {
         setOutput(String(result))
       } else {
-        setError('无法解析日期时间，请使用格式：YYYY-MM-DD HH:mm:ss')
+        setError(t('errorInvalidDate'))
       }
     }
-  }, [mode, unit, input])
+  }, [mode, unit, input, t])
 
   useEffect(() => {
     if (!input.trim()) {
@@ -64,7 +66,7 @@ function App() {
       return
     }
     convert()
-  }, [input, mode, unit])
+  }, [input, mode, unit, t])
 
   const copyToClipboard = useCallback(async () => {
     const text = output || input
@@ -74,7 +76,7 @@ function App() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      setError('复制失败')
+      setError(t('errorCopy'))
     }
   }, [output, input])
 
@@ -94,8 +96,17 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>时间戳转换</h1>
-        <p className="subtitle">时间戳 ⇄ 北京时间，支持秒/毫秒，一键复制</p>
+        <div className="header-top">
+          <h1>{t('title')}</h1>
+          <button
+            className="lang-switcher"
+            onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
+            title={lang === 'zh' ? 'Switch to English' : '切换到中文'}
+          >
+            {lang === 'zh' ? 'EN' : '中'}
+          </button>
+        </div>
+        <p className="subtitle">{t('subtitle')}</p>
       </header>
 
       <div className="toolbar">
@@ -104,24 +115,24 @@ function App() {
             onClick={() => setMode('ts2date')}
             className={`btn ${mode === 'ts2date' ? 'btn-primary' : 'btn-secondary'}`}
           >
-            时间戳 → 北京时间
+            {t('ts2date')}
           </button>
           <button
             onClick={() => setMode('date2ts')}
             className={`btn ${mode === 'date2ts' ? 'btn-primary' : 'btn-secondary'}`}
           >
-            日期时间 → 时间戳
+            {t('date2ts')}
           </button>
           <label className="unit-control">
-            <span>单位</span>
+            <span>{t('unit')}</span>
             <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-              <option value="ms">毫秒</option>
-              <option value="s">秒</option>
+              <option value="ms">{t('ms')}</option>
+              <option value="s">{t('s')}</option>
             </select>
           </label>
           {mode === 'ts2date' && (
             <button onClick={setNow} className="btn btn-secondary">
-              当前时间
+              {t('now')}
             </button>
           )}
         </div>
@@ -131,10 +142,10 @@ function App() {
             className="btn btn-ghost"
             disabled={!copyTarget}
           >
-            {copied ? '已复制' : '复制'}
+            {copied ? t('copied') : t('copy')}
           </button>
           <button onClick={clearAll} className="btn btn-ghost">
-            清空
+            {t('clear')}
           </button>
         </div>
       </div>
@@ -150,10 +161,10 @@ function App() {
         <div className="panel">
           <div className="panel-header">
             <span>
-              {mode === 'ts2date' ? '时间戳' : '日期时间'}
+              {mode === 'ts2date' ? t('timestamp') : t('dateTime')}
             </span>
             {mode === 'ts2date' && (
-              <span className="unit-badge">{unit === 'ms' ? '毫秒' : '秒'}</span>
+              <span className="unit-badge">{unit === 'ms' ? t('ms') : t('s')}</span>
             )}
           </div>
           <textarea
@@ -174,10 +185,10 @@ function App() {
         <div className="panel">
           <div className="panel-header">
             <span>
-              {mode === 'ts2date' ? '北京时间' : '时间戳'}
+              {mode === 'ts2date' ? t('beijingTime') : t('timestamp')}
             </span>
             {mode === 'date2ts' && (
-              <span className="unit-badge">{unit === 'ms' ? '毫秒' : '秒'}</span>
+              <span className="unit-badge">{unit === 'ms' ? t('ms') : t('s')}</span>
             )}
           </div>
           <pre className="panel-output">
@@ -186,8 +197,8 @@ function App() {
             ) : (
               <span className="placeholder">
                 {mode === 'ts2date'
-                  ? '输入时间戳后自动转换'
-                  : '输入日期时间后自动转换'}
+                  ? t('placeholderTs')
+                  : t('placeholderDate')}
               </span>
             )}
           </pre>
@@ -195,16 +206,16 @@ function App() {
       </div>
 
       <footer className="footer">
-        <span>支持秒/毫秒、实时转换、一键复制</span>
+        <span>{t('footerDesc')}</span>
         <p className="footer-sponsor">
-          若对你有帮助，欢迎
+          {t('supportAuthor')}
           <a
             href="https://afdian.com/a/sundd1898"
             target="_blank"
             rel="noopener noreferrer"
             className="footer-sponsor-link"
           >
-            支持作者（爱发电）
+            {t('supportLink')}
           </a>
         </p>
       </footer>
