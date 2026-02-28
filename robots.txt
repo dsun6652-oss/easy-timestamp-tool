@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dsun6652-oss.github.io/easy-timestamp-tool/sitemap.xml
